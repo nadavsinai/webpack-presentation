@@ -1,23 +1,34 @@
-# Webpack is Awesome
+## JS Modules, Webpack and Build flow
 
-Note:
-
-I think Webpack is an awesome tool, but not enough people know it. I want to change that.
-
-
-
-## Who am I
-
-Daniel ([@unindented](https://twitter.com/unindented))
-
-Front-end developer at Yammer
+Nadav Sinai ([@nadavsinai](https://twitter.com/nadavsinai))
+Misterbit 
 
 
 
-## What is Webpack
+## Background 
 
-- Module bundler <!-- .element: class="fragment" -->
-- Understands CJS and AMD <!-- .element: class="fragment" -->
+- Initially JS did not define modules <!-- .element: class="fragment" -->
+- Static HTML, JS code inside a script tag, all run in the global context <!-- .element: class="fragment" -->
+- Subsequent code loading is hacky - XHR to load text, create new script tags <!-- .element: class="fragment" -->
+- Global objects, script loading order <!-- .element: class="fragment" -->
+- Loading many resources is inefficient <!-- .element: class="fragment" -->
+- Script evalution delays page rendering <!-- .element: class="fragment" -->
+- Concating JS via task runners <!-- .element: class="fragment" -->
+- Managing assets is hard (css,fonts,Images etc) <!-- .element: class="fragment" -->
+
+
+## Rise Of modules
+
+- AMD - require.js  <!-- .element: class="fragment" -->
+- Node.js - Common JS (CJS) <!-- .element: class="fragment" -->
+- FrontEnd Frameworks (Angular) <!-- .element: class="fragment" -->
+- Hard to inter-op, not all async, other resources? <!-- .element: class="fragment" -->
+
+
+
+## Webpack - A Module Bundler
+
+- Understands your code as tree of Dependecies CJS and AMD <!-- .element: class="fragment" -->
 - Creates one or many bundles <!-- .element: class="fragment" -->
 - Treats every asset as a module <!-- .element: class="fragment" -->
 - Gives you hooks to transform modules <!-- .element: class="fragment" -->
@@ -975,132 +986,6 @@ chunk    {0} main.js, 0.67e20f0d56fd82d8.hot-update.js
 webpack: bundle is now VALID.
 ```
 
-
-
-## Circular Dependencies
-
-Note:
-
-Circular dependencies are handled the same way as in Node.js.
-
-When you create a loop in the dependency graph, the requiring module will get a reference to an incomplete `module.exports` from the required module. If you are adding properties by doing `module.exports.foo = ...`, the incomplete object will receive them eventually. But if you declare your exports by doing `module.exports = ...`, you will be creating a new object which the requiring module has no way to access.
-
-
-```javascript
-var a = require('./a');
-var b = require('./b');
-console.log(a.foo(), a.bar());
-console.log(b.foo(), b.bar());
-```
-
-`entry.js`
-
-
-```javascript
-var b = require('./b');
-
-module.exports = {
-  foo: function () {
-    return 'foo';
-  },
-  bar: function () {
-    return b.bar();
-  }
-};
-```
-
-`a.js`
-
-
-```javascript
-var a = require('./a');
-
-module.exports = {
-  foo: function () {
-    return a.foo();
-  },
-  bar: function () {
-    return 'bar';
-  }
-};
-```
-
-`b.js`
-
-
-```bash
-$ webpack && node output/bundle.js
-Hash: 2a025268ca2ec2599e02
-Version: webpack 1.4.15
-Time: 27ms
-    Asset  Size  Chunks             Chunk Names
-bundle.js  2081       0  [emitted]  main
-   [0] ./entry.js 110 {0} [built]
-   [1] ./a.js 136 {0} [built]
-   [2] ./b.js 136 {0} [built]
-foo bar
-
-.../examples/loop-cjs/output/bundle.js:77
-      return a.foo();
-               ^
-TypeError: Object #<Object> has no method 'foo'
-```
-
-Note:
-
-At that point, `a` is an empty object.
-
-
-```javascript
-module.exports = {
-  foo: function () {
-    return 'foo';
-  },
-  bar: function () {
-    return require('./b').bar();
-  }
-};
-```
-
-`a.js`
-
-
-```javascript
-module.exports = {
-  foo: function () {
-    return require('./a').foo();
-  },
-  bar: function () {
-    return 'bar';
-  }
-};
-```
-
-`b.js`
-
-Note:
-
-One possible solution is to defer the calls to `require`.
-
-We could also move our `module.exports` statement above the `require` calls.
-
-
-```bash
-$ webpack && node output/bundle.js
-Hash: c35dab70ede7e0f1b348
-Version: webpack 1.4.15
-Time: 28ms
-    Asset  Size  Chunks             Chunk Names
-bundle.js  2055       0  [emitted]  main
-   [0] ./entry.js 110 {0} [built]
-   [1] ./a.js 124 {0} [built]
-   [2] ./b.js 124 {0} [built]
-foo bar
-foo bar
-```
-
-
-
 ## Dependency Visualization
 
 <http://webpack.github.io/analyse/> <!-- .element: class="fragment" -->
@@ -1116,15 +1001,6 @@ The *analyse* tool draws a pretty graph of all the modules, and gives us all sor
 
 
 
-## Much More
+## Links and thanks
 
-* Source maps <!-- .element: class="fragment" -->
-* Ignore dependencies <!-- .element: class="fragment" -->
-* Dedupe dependencies <!-- .element: class="fragment" -->
-* Loaders for every format <!-- .element: class="fragment" -->
-
-
-
-## Questions?
-
-<https://unindented.github.io/webpack-presentation/> <!-- .element: class="fragment" -->
+- original presentation by Daniel Perez Alvarez <https://unindented.github.io/webpack-presentation/> 
