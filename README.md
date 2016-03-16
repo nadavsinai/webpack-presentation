@@ -565,6 +565,25 @@ module.exports = {
   ]
 };
 ```
+--
+```bash
+$ set EXTRACT=true && webpack
+
+Hash: af99ca8125c54c041099
+Version: webpack 1.12.14
+Time: 309ms
+                                    Asset       Size  Chunks             Chunk Names
+             main-af99ca8125c54c041099.js    2.04 kB       0  [emitted]  main
+main-c1233e831b65150ed26f98e4a1ec4e79.css  520 bytes       0  [emitted]  main
+   [0] ./entry.js 240 bytes {0} [built]
+   [8] ./greeter.js 86 bytes {0} [built]
+    + 7 hidden modules
+Child extract-text-webpack-plugin:
+        + 3 hidden modules
+Child extract-text-webpack-plugin:
+        + 2 hidden modules
+
+```
 ---
 ## Contexts
 
@@ -572,12 +591,7 @@ module.exports = {
 ```javascript
 require('./lib/' + name + '.js');
 ```
-
-Note:
-
-A context is created if your request contains expressions, so the exact module is not known at compile time.
-
-
+--
 ```javascript
 var req = require.context('./lib', true, /^\.\/.*\.js$/);
 var libs = req.keys();
@@ -587,13 +601,11 @@ console.log(req(lib).foo());
 
 `entry.js`
 
-Note:
 
 You can also create contexts by hand through the `require.context` function.
-
 Here we are using that functionality to require a random module from the `lib` folder.
 
-
+--
 ```bash
 $ webpack
 Hash: d0078b76688772738490
@@ -608,29 +620,17 @@ bundle.js  2631       0  [emitted]  main
    [4] ./lib/c.js 63 {0} [optional] [built]
 ```
 
-Note:
-
 Webpack includes all modules matching our regular expression in the bundle.
 
-
-```bash
-$ node output/bundle.js
-c
-$ node output/bundle.js
-b
-```
-
-Note:
-
-At runtime it does the right thing.
-
-
+--
 **Why would anyone want to do this?**
 
 * Require resource based on locale <!-- .element: class="fragment" -->
+* Globbing of assets  <!-- .element: class="fragment" -->
 * Require all components to build a gallery <!-- .element: class="fragment" -->
----
 
+
+---
 ### Context Replacement
 
 
@@ -638,14 +638,11 @@ At runtime it does the right thing.
 var moment = require('moment');
 console.log(moment().format('dddd'));
 ```
-
 `entry.js`
-
-Note:
 
 Some third-party libraries, like Moment, also create contexts when processed through Webpack.
 
-
+--
 ```bash
 $ webpack
 Hash: 3fa34cb738076f531876
@@ -657,11 +654,9 @@ bundle.js  393777       0  [emitted]  main
 	+ 81 hidden modules
 ```
 
-Note:
-
 Why is the bundle so big?
 
-
+--
 ```javascript
 function loadLocale(name) {
   var oldLocale = null;
@@ -675,13 +670,11 @@ function loadLocale(name) {
   return locales[name];
 }
 ```
-
 `moment.js`
 
-Note:
 
 Webpack is creating a context and including all locales in the bundle.
-
+--
 
 ```javascript
 module.exports = {
@@ -691,7 +684,6 @@ module.exports = {
 	path: 'output',
 	filename: 'bundle.js'
   },
-
   plugins: [
 	new ContextReplacementPlugin(
 	  /moment[\\\/]locale$/,
@@ -700,14 +692,11 @@ module.exports = {
   ]
 };
 ```
-
 `webpack.config.js`
-
-Note:
 
 We can use the `ContextReplacementPlugin` plugin to manipulate the context. Here, we are only including the English locale.
 
-
+--
 ```bash
 $ webpack
 Hash: d6a652b194a14ca3d0a6
@@ -719,19 +708,17 @@ bundle.js  101653       0  [emitted]  main
 	+ 3 hidden modules
 ```
 
-Note:
-
 The resulting bundle is much smaller, because we've left all other locales out.
 
 ---
 
 ## Load On Demand
 
-Note:
 
-If your app is big, you may want to load some things on demand, rather than upfront. You can do so through `require.ensure` if you are using CommonJS syntax, or `require` if you are using AMD syntax.
+If your app is big, you may want to load some things on demand
+You can do so through `require.ensure` if you are using CommonJS syntax, or `require` with array argument and callback in AMD style.
 
-`require.ensure` does not evaluate the module. `require` does.
+`require.ensure` will load the modules inside the callback function before calling it
 
 
 ```javascript
@@ -743,10 +730,9 @@ var p = function () {
 a.foo(p);
 a.bar(p);
 ```
-
 `entry.js`
 
-
+--
 ```javascript
 module.exports = {
   foo: function (callback) {
@@ -759,13 +745,10 @@ module.exports = {
   }
 };
 ```
-
 `a.js`
 
-Note:
-
 Calling `require.ensure` here will create a split point that will put `b` into its own chunk. This chunk will be loaded on demand when the `bar` method is called.
-
+--
 
 ```javascript
 module.exports = {
@@ -774,7 +757,6 @@ module.exports = {
   }
 };
 ```
-
 `b.js`
 
 
@@ -791,29 +773,20 @@ Time: 31ms
    [2] ./b.js 76 {1} [built]
 ```
 
-Note:
+You can see that `b` has been split into its own chunk. webpack will deal with loading it via JSONP
 
-You can see that `b` has been split into its own chunk.
+---
 
+## Webpack Dev Server
 
 ```bash
 $ webpack-dev-server
 $ open http://localhost:8080/bundle
 ```
 
-Note:
-
-You can see this in action by launching `webpack-dev-server`.
----
-
-
-## Dev Server
-
-Note:
-
 The `webpack-dev-server` is a little `express` server, which uses the `webpack-dev-middleware` to serve a bundle.
 
-
+--
 ```bash
 http://localhost:8080/webpack-dev-server/
 webpack result is served from /
@@ -835,7 +808,7 @@ chunk    {0} main.js (main) 10032 [rendered]
 	[8] ./bg.png 353 {0} [built]
 webpack: bundle is now VALID.
 ```
-
+--
 
 ```bash
 webpack: bundle is now INVALID.
@@ -850,46 +823,47 @@ chunk    {0} main.js (main) 10031 [rendered]
 	 + 7 hidden modules
 webpack: bundle is now VALID.
 ```
-
-Note:
-
-When you make a change, `webpack-dev-middleware` will recompile only the modules that are affected by it.
-
-
-```bash
-$ webpack-dev-server --hot
-```
-
-Note:
-
-If you run `webpack-dev-server` with hot module replacement enabled, you can inject your changes into the runtime as you make them.
-
-
-```bash
-webpack: bundle is now INVALID.
-Hash: 3fec1bd53dcd5db963b5
-Version: webpack 1.4.15
-Time: 21ms
-							   Asset    Size  Chunks
-							 main.js  141697       0
-0.67e20f0d56fd82d86a5d.hot-update.js     271       0
-67e20f0d56fd82d86a5d.hot-update.json      36
-chunk    {0} main.js, 0.67e20f0d56fd82d8.hot-update.js
-	[8] ./bar.less 1638 {0} [built]
-	[9] ./~/css-loader!./~/less-loader!./bar.less
-	 + 13 hidden modules
-webpack: bundle is now VALID.
-```
 ---
+## Algotec Setup
+
+- A single webpack config - modified by runtime environment and arguments  <!-- .element: class="fragment" -->
+- Development, build and test environments  <!-- .element: class="fragment" -->
+- Config is using node API such as path and 3rtd party utils such as lodash  <!-- .element: class="fragment" -->
+- plugins and loaders exist in separate files  <!-- .element: class="fragment" -->
+
+--
+
+## Loaders
+- typescript - using es6 target and babel to es5  <!-- .element: class="fragment" -->
+- es6 <!-- .element: class="fragment" -->
+- html <!-- .element: class="fragment" -->
+- json <!-- .element: class="fragment" -->
+- css & less <!-- .element: class="fragment" -->
+- fonts (woff,ttf etc..) <!-- .element: class="fragment" -->
+- images (svg,png, gif etc..) <!-- .element: class="fragment" -->
+- tslint (preloader) <!-- .element: class="fragment" -->
+- istanbul (post) <!-- .element: class="fragment" -->
+
+--
+## Plugins
+
+- CopyWebpackPlugin <!-- .element: class="fragment" -->
+- HtmlWebpackPlugin <!-- .element: class="fragment" -->
+- DefinePlugin <!-- .element: class="fragment" -->
+- ExtractTextPlugin <!-- .element: class="fragment" -->
+- ProvidePlugin <!-- .element: class="fragment" -->
+- SplitByPathPlugin <!-- .element: class="fragment" -->
+- CleanWebpackPlugin <!-- .element: class="fragment" -->
+- OccurenceOrderPlugin <!-- .element: class="fragment" -->
+- DedupePlugin <!-- .element: class="fragment" -->
+- UglifyJsPlugin <!-- .element: class="fragment" -->
+ 
+
+---
+
 ## Dependency Visualization
 
-<http://webpack.github.io/analyse/> <!-- .element: class="fragment" -->
-
-Note:
-
-We can output stats from the bundling process, and query the information.
-
-The *analyse* tool draws a pretty graph of all the modules, and gives us all sorts of useful details.
+<http://webpack.github.io/analyse/>
 
 
 ![Dependency graph](assets/graph.png)

@@ -13,7 +13,8 @@ module.exports = Object.keys(langs).map(function (lang) {
 
     output: {
       path: 'output',
-      filename: 'bundle-' + lang + '.js'
+      filename: 'bundle-' + lang + '.js',
+      publicPath:'/'
     },
 
     plugins: [
