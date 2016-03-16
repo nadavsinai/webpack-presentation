@@ -6,7 +6,7 @@
     "optim": "./node_modules/.bin/webpack -p"
   },
   "devDependencies": {
-    "webpack": "~1.4.15",
+    "webpack": "~1.12.14",
     "i18n-webpack-plugin": "~0.2.7"
   }
 }

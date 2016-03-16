@@ -6,8 +6,8 @@
     "serve": "./node_modules/.bin/webpack-dev-server --inline --hot"
   },
   "devDependencies": {
-    "webpack": "~1.4.15",
-    "webpack-dev-server": "~1.7.0",
+    "webpack": "~1.12.14",
+    "webpack-dev-server": "~1.14.1",
     "file-loader": "~0.8.1",
     "url-loader": "~0.5.5",
     "style-loader": "~0.8.2",
