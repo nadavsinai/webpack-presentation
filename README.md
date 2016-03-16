@@ -49,6 +49,8 @@ Misterbit
 - Can be used from CLI or via node API <!-- .element: class="fragment" -->
 - All options can be set from CLI arguments or configuration object <!-- .element: class="fragment" -->
 - Many integrations with the API exists - eg. webpack-dev-server  <!-- .element: class="fragment" -->
+- Code can target multiple targets - useful for web, node libraries, existing AMD systems etc  <!-- .element: class="fragment" -->
+ 
 
 ---
  
@@ -209,13 +211,9 @@ entry: './entry',
 `webpack.config.js`
 
 
-----
+---
 
 ## Loaders
-
-Note:
-
-It's pretty common to apply transformations to modules. Think TypeScript to JavaScript, or Sass to CSS. That's the job of loaders.
 
 
 ```typesciprt
@@ -225,7 +223,7 @@ export function greet(name){
 ```
 
 `greeter.ts`
----
+--
 
 Inlined:
 
@@ -266,31 +264,8 @@ module.exports = {
 
 `webpack.config.js`
 
-Note:
-
-We are telling Webpack that all files ending with `.coffee` should go through the `coffee` loader. We are also telling it to try the `.coffee` extension when resolving modules.
-
-Much better than inlining, as all your configuration is in one place, so it's much easier to change things.
-
-
-```bash
-$ webpack && node output/bundle.js
-Hash: b99cec921bbe2d10542d
-Version: webpack 1.4.15
-Time: 70ms
-	Asset  Size  Chunks             Chunk Names
-bundle.js  1731       0  [emitted]  main
-   [0] ./entry.js 72 {0} [built]
-	+ 1 hidden modules
-Hello John
-```
-----
-
+---
 ### HTML, CSS, Assets
-
-Note:
-
-Loaders can help you with much more than transforming CoffeeScript to JavaScript.
 
 
 ```css
@@ -298,9 +273,7 @@ body {
   background: transparent url('./bg.png') repeat;
 }
 ```
-
 `styles.css`
-
 
 ```javascript
 module.exports = {
@@ -308,7 +281,8 @@ module.exports = {
 	loaders: [
 	  {
 		test: /\.(gif|jpe?g|png)$/,
-		loader: 'url?limit=10000'
+		loader: 'url',
+		query:{limit:10000} // options to loader given via query object
 	  },
 	  {
 		test: /\.css$/,
@@ -316,109 +290,15 @@ module.exports = {
 	  },
 	  {
 		test: /\.less$/,
-		loader: 'style!css!less?strictMath'
+		loader: 'style!css!less?strictMath'   // options given to loader via url like syntax
 	  }
 	]
   }
 };
 ```
-
 `webpack.config.js`
 
-Note:
-
-You can use the `file` and `url` loaders to process assets like images. The `url` loader is just like `file`, but allows you to inline dependencies under certain conditions.
-
-The `html` and `css` loaders are able to identify dependencies in HTML files (e.g. `<img src="foo.gif" />`) and CSS files (e.g. `background-image: url('bar.png')`) respectively.
-
-CSS files need to go through yet another loader, `style`, to be injected into the head of the HTML document.
-
-
-```javascript
-module.exports = {
-  module: {
-	loaders: [
-	  {
-		test: /\.css$/,
-		loader: ExtractTextPlugin.extract('style', 'css')
-	  }
-	]
-  },
-
-  plugins: [
-	new ExtractTextPlugin('bundle.css')
-  ]
-};
-```
-
-`webpack.config.js`
-
-Note:
-
-If you want to extract CSS content into its own file, you can use the `ExtractTextPlugin` plugin.
-
-
-```bash
-$ webpack
-Hash: f379bf0455c6069d7446
-Version: webpack 1.4.15
-Time: 200ms
-	Asset  Size  Chunks             Chunk Names
-bundle.js  2144       0  [emitted]  main
- main.css   512       0  [emitted]  main
-   [0] ./entry.js 224 {0} [built]
-   [1] ./greeter.js 81 {0} [built]
-	+ 7 hidden modules
-Child extract-text-webpack-plugin:
-		+ 3 hidden modules
-Child extract-text-webpack-plugin:
-		+ 2 hidden modules
-```
-----
-
-### Busting Caches
-
-
-```javascript
-module.exports = {
-  entry: './entry',
-
-  output: {
-	path: 'output',
-	filename: '[name]-[hash].js',
-	chunkFilename: '[name]-[id]-[chunkhash].js'
-  },
-
-  plugins: [
-	new ExtractTextPlugin('[name]-[contenthash].css')
-  ]
-};
-```
-
-`webpack.config.js`
-
-
-```bash
-Hash: 79eade7734f974b46524
-Version: webpack 1.4.15
-Time: 192ms
-									Asset  Size  Chunks
-			 main-79eade7734f974b46524.js  2144       0
-main-3ddaac796ef046d7c9b226ac20da330b.css   512       0
-   [0] ./entry.js 224 {0} [built]
-   [1] ./greeter.js 81 {0} [built]
-	+ 7 hidden modules
-Child extract-text-webpack-plugin:
-		+ 3 hidden modules
-Child extract-text-webpack-plugin:
-		+ 2 hidden modules
-```
-
-Note:
-
-You even have cache-busting hashes built in.
-
-----
+---
 ### Pre/Post Loaders
 
 
@@ -428,7 +308,7 @@ module.exports = {
 	preLoaders: [{
 	  test:    /\.js$/,
 	  exclude: /(node_modules)\//,
-	  loader:  'jshint!jscs'
+	  loader:  'eslint'
 	}],
 
 	postLoaders: [{
@@ -439,25 +319,38 @@ module.exports = {
   }
 };
 ```
+`webpack.config.js`
+
+---
+
+### Busting Caches
+
+```javascript
+module.exports = {
+  entry: './entry',
+  output: {
+	path: 'output',
+	filename: '[name]-[hash].js',
+  },
+  ]
+};
+```
 
 `webpack.config.js`
 
-Note:
+```bash
+Hash: 79eade7734f974b46524
+Version: webpack 1.4.15
+Time: 192ms
+									Asset  Size  Chunks
+		entry-79eade7734f974b46524.js  2144       0
+   [0] ./entry.js 224 {0} [built]
+   [1] ./greeter.js 81 {0} [built]
+```
 
-You can also specify pre- and post-loaders. Here we'd be running our JavaScript files through two linting libraries, and through a code instrumenting library.
-
-The order in which loaders are applied is the following:
-
-- The file is read from the filesystem
-- `module.preLoaders` are applied
-- `module.loaders` are applied
-- Inlined loaders are applied
-- `module.postLoaders` are applied
-
-----
+---
 
 ## Multiple Entries
-
 
 ```javascript
 var greeter = require('./greeter');
@@ -465,17 +358,11 @@ console.log(greeter.greet('John'));
 ```
 `entry1.js`
 
-
-
-
-
 ```javascript
 var greeter = require('./greeter');
 console.log(greeter.greet('Jane'));
 ```
-
 `entry2.js`
-
 
 --
 webpack.config.js
@@ -518,12 +405,10 @@ module.exports = {
 	entry1: './entry1',
 	entry2: './entry2'
   },
-
   output: {
 	path: 'output',
 	filename: 'bundle-[name].js'
   },
-
   plugins: [
 	new CommonsChunkPlugin('common', 'bundle-[name].js')
   ]
@@ -547,27 +432,27 @@ bundle-common.js  3842       2  [emitted]  common
    [1] ./greeter.js 81 {2} [built]
 ```
 
-----
+---
 ## Plugins
 
+Plugins allow us to hook into the bundling process.
 
+For example when webpack parses the code's AST looking for require calls we might as well do other things: 
 ```javascript
 var t = require('./translator');
-
 module.exports = {
   greet: function (name) {
 	return t(__('greeting'), {name: name});
   }
 };
 ```
-
 `greeter.js`
 
 Note:
 
-Plugins allow us to hook into different phases of the bundling process. For example, the `I18nPlugin` plugin replaces occurrences of the `\_\_` function with strings from a dictionary (e.g. `__("Hello World")` is replaced with `"Hello World"` or `"Hola Mundo"`, depending on the current locale).
+ For example, the `I18nPlugin` plugin replaces occurrences of the `\_\_` function with strings from a dictionary (e.g. `__("Hello World")` is replaced with `"Hello World"` or `"Hola Mundo"`, depending on the current locale).
 
-
+--
 ```javascript
 var greeter = require('./greeter');
 if (DEBUG) {
@@ -575,52 +460,33 @@ if (DEBUG) {
 }
 console.log(greeter.greet('John'));
 ```
-
 `entry.js`
 
-Note:
-
 The `DefinePlugin` plugin allows us to define free variables, like `DEBUG` and `LANGUAGE`. The value of those variables is specified in the config file.
-
-
+--
 ```javascript
 var langs = {
   en: require('./languages/en.json'),
   es: require('./languages/es.json')
 };
-```
-
-`webpack.config.js`
-
-
-```javascript
-module.exports = Object.keys(langs).map(function (l) {
+module.exports = Object.keys(langs).map(function (lang) {
   return {
 	entry: './entry',
-
 	output: {
 	  path: 'output',
-	  filename: 'bundle-' + l + '.js'
+	  filename: 'bundle-' + lang + '.js'
 	},
-
 	plugins: [
 	  new DefinePlugin({
 		DEBUG: !!process.env.DEBUG,
-		LANGUAGE: '"' + l + '"'
+		LANGUAGE: JSON.stringify(lang)
 	  }),
-	  new I18nPlugin(langs[l])
+	  new I18nPlugin(langs[lang])
 	]
   };
 });
 ```
-
-`webpack.config.js (continued)`
-
-Note:
-
-We are generating a bundle for each of the languages in the `langs` object, storing the language code in the `LANGUAGE` variable.
-
-We are also defining the value of `DEBUG` through an environment variable.
+`webpack.config.js`
 
 
 ```bash
@@ -632,11 +498,7 @@ Greeting in "es"
 Hola John
 ```
 
-Note:
-
-When we bundle the app with the `DEBUG` environment variable set to `true`, we see the debugging statement.
-
-
+--
 ```javascript
 // ...
 function(module, exports, __webpack_require__) {
@@ -648,13 +510,13 @@ function(module, exports, __webpack_require__) {
 },
 // ...
 ```
-
 `bundle.js`
 
-Note:
 
 The `DEBUG` variable got replaced with `true`.
-
+--
+### Production
+`webpack -p`  is a shortcut for adding some optimization plugins (for production)
 
 ```bash
 $ webpack -p && node output/bundle-es.js
@@ -672,12 +534,38 @@ Dropping unreachable code [./entry.js:3,0]
 Hola John
 ```
 
-Note:
 
-If we don't specify the `DEBUG` environment variable, the condition in the `if` statement is always false. That's why the whole block gets dropped by UglifyJS when we enable optimizations with the `-p` flag, and we don't see the debugging statement in the output.
+---
 
+## ExtractText
 
-----
+ExtractText is a very useful plugin that allows to re-bundle assets as text - very common for use with CSS
+So that the css is deployed in a regular css file required by the browser via <link rel="styleheet"> 
+
+```javascript
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
+module.exports = {
+  entry: './entry',
+  output: {
+    path: 'output',
+    filename: '[name]-[hash].js'
+  },
+  module: {
+    loaders: [
+      { test: /\.(gif|jpe?g|png)$/, loader: 'url?limit=10000' },
+      { test: /\.css$/, loader: ExtractTextPlugin.extract('style', 'css') },
+      { test: /\.less$/, loader: ExtractTextPlugin.extract('style', 'css!less?strictMath') }
+    ]
+  },
+  resolve: {
+    extensions: ['', '.js', '.css', '.less']
+  },
+  plugins: [
+    new ExtractTextPlugin('[name]-[contenthash].css', {disable: !process.env.EXTRACT})
+  ]
+};
+```
+---
 ## Contexts
 
 
@@ -741,7 +629,7 @@ At runtime it does the right thing.
 
 * Require resource based on locale <!-- .element: class="fragment" -->
 * Require all components to build a gallery <!-- .element: class="fragment" -->
-----
+---
 
 ### Context Replacement
 
@@ -835,7 +723,7 @@ Note:
 
 The resulting bundle is much smaller, because we've left all other locales out.
 
-----
+---
 
 ## Load On Demand
 
@@ -916,7 +804,7 @@ $ open http://localhost:8080/bundle
 Note:
 
 You can see this in action by launching `webpack-dev-server`.
-----
+---
 
 
 ## Dev Server
@@ -992,7 +880,7 @@ chunk    {0} main.js, 0.67e20f0d56fd82d8.hot-update.js
 	 + 13 hidden modules
 webpack: bundle is now VALID.
 ```
-----
+---
 ## Dependency Visualization
 
 <http://webpack.github.io/analyse/> <!-- .element: class="fragment" -->
@@ -1006,13 +894,14 @@ The *analyse* tool draws a pretty graph of all the modules, and gives us all sor
 
 ![Dependency graph](assets/graph.png)
 
-----
+---
 
 ## Links and thanks
 
 - original presentation by Daniel Perez Alvarez <https://unindented.github.io/webpack-presentation/>
 - The ultimate webpack setup <http://www.christianalfoni.com/articles/2015_04_19_The-ultimate-webpack-setup/>
 - Webpack 101 <http://code.hootsuite.com/webpack-101/>
+- A Simple Webpack Tutorial <funny> <https://medium.com/@dtothefp/why-can-t-anyone-write-a-simple-webpack-tutorial-d0b075db35ed#.klf13zbnp>
 - Docs: [webpack.github.io/docs/](http://webpack.github.io/docs/)
 - Examples: [github.com/.../examples](https://github.com/webpack/webpack/tree/master/examples)
 - Angular 2 webpack starter <https://github.com/AngularClass/angular2-webpack-starter>
