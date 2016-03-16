@@ -3,7 +3,7 @@
 Nadav Sinai ([@nadavsinai](https://twitter.com/nadavsinai))
 Misterbit 
 
-
+---
 
 ## Background 
 
@@ -17,6 +17,7 @@ Misterbit
 - Managing assets is hard (css,fonts,Images etc) <!-- .element: class="fragment" -->
 
 
+---
 ## Rise Of modules
 
 - AMD - require.js  <!-- .element: class="fragment" -->
@@ -24,44 +25,35 @@ Misterbit
 - FrontEnd Frameworks (Angular) <!-- .element: class="fragment" -->
 - Hard to inter-op, not all async, other resources? <!-- .element: class="fragment" -->
 
-
+---
 
 ## Webpack - A Module Bundler
 
-- Understands your code as tree of Dependecies CJS and AMD <!-- .element: class="fragment" -->
-- Creates one or many bundles <!-- .element: class="fragment" -->
-- Treats every asset as a module <!-- .element: class="fragment" -->
-- Gives you hooks to transform modules <!-- .element: class="fragment" -->
+- Understands your code as tree of dependencies CJS and AMD <!-- .element: class="fragment" -->
+- Walks JS code like a tree starting from a defined “entry point” and analyzes  <!-- .element: class="fragment" -->
+- Allows modules of any type via chain-able loaders (es6, css images, etc..) <!-- .element: class="fragment" -->
+- Creates one or many bundles, async loading or multi entries <!-- .element: class="fragment" --> 
 - Gives you hooks into the bundling process <!-- .element: class="fragment" -->
-- Much more! <!-- .element: class="fragment" -->
+- Has great internal support for common tasks  <!-- .element: class="fragment" -->
+- Very flexible configuration <!-- .element: class="fragment" -->
 
-Note:
+---
 
-Webpack is a module bundler, in the lines of [RequireJS](http://requirejs.org/) and [Browserify](http://browserify.org/), but it is much better suited for big projects.
+## Webpack
+![](what-is-webpack.png)
+ 
+---
 
-The main differences with those other tools are:
+### Webpack - a Node.js Tool
 
-- It handles both CommonJS and AMD syntaxes (plus ES6 modules through loaders).
-- It allows you to split the dependency tree into chunks loaded on demand.
-- It can extract dependencies that are common to multiple entry points into their own chunk.
-- It can treat any asset as a requireable module, and transform it, through the use of loaders.
-- It allows you to customize almost every part of the bundling process through plugins.
+- Can be used from CLI or via node API <!-- .element: class="fragment" -->
+- All options can be set from CLI arguments or configuration object <!-- .element: class="fragment" -->
+- Many integrations with the API exists - eg. webpack-dev-server  <!-- .element: class="fragment" -->
 
+---
+ 
+## Simple Single Entry
 
-- Docs: [webpack.github.io/docs/](http://webpack.github.io/docs/)
-- Examples: [github.com/.../examples](https://github.com/webpack/webpack/tree/master/examples)
-
-Note:
-
-The docs are really dense, but they are not bad. You just need to spend time with them.
-
-The examples are useful once you understand the underlying concepts.
-
-
-
-## Single Entry
-
-Note:
 
 Simplest example: an app with a single entry point.
 
@@ -69,13 +61,13 @@ Simplest example: an app with a single entry point.
 ```javascript
 module.exports = {
   greet: function (name) {
-    return 'Hello ' + name;
+	return 'Hello ' + name;
   }
 };
 ```
 
 `greeter.js`
-
+--
 
 ```javascript
 var greeter = require('./greeter');
@@ -83,7 +75,7 @@ console.log(greeter.greet('John'));
 ```
 
 `entry.js`
-
+--
 
 Via command line:
 
@@ -99,224 +91,150 @@ module.exports = {
   entry: './entry',
 
   output: {
-    path: 'output',
-    filename: 'bundle.js'
+	path: 'output',
+	filename: 'bundle.js'
   }
 };
 ```
 
 `webpack.config.js`
 
-Note:
-
-Keeping things in a configuration file is the way to go for non-trivial setups.
-
-If your config file is called `webpack.config.js` you don't even have to specify the `--config` parameter to `webpack`.
-
+If your config file is called `webpack.config.js` you don't even have to specify the `--config` parameter to webpack. <!-- .element: class="small" -->  
+--
 
 ```bash
 $ webpack && node output/bundle.js
 Hash: e7789bda0fc57a510df7
 Version: webpack 1.4.15
 Time: 28ms
-    Asset  Size  Chunks             Chunk Names
+	Asset  Size  Chunks             Chunk Names
 bundle.js  1732       0  [emitted]  main
    [0] ./entry.js 72 {0} [built]
    [1] ./greeter.js 81 {0} [built]
 Hello John
 ```
 
-Note:
+--
+output - bundle.js
+```javascript 
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+/******/
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
 
-The runtime overhead compared to Browserify and RequireJS:
-
-- **Webpack**: 243b + 20b per module + 4b per dependency
-- **Browserify**: 14.7kb + 0b per module + (3b + X) per dependency
-- **RequireJS**: 415b + 25b per module + (6b + 2X) per dependency
+	var greeter = __webpack_require__(1);
+	console.log(greeter.greet('John'));
 
 
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
 
-## Multiple Entries
+	module.exports = {
+	  greet: function (name) {
+		return 'Hello ' + name;
+	  }
+	};
 
-Note:
 
-Next step: an app with multiple entry points. Think <https://twitter.com/>, <https://twitter.com/settings/account>, etc.
-
-
-```javascript
-var greeter = require('./greeter');
-console.log(greeter.greet('John'));
+/***/ }
+/******/ ])
 ```
-
-`entry1.js`
-
-
-```javascript
-var greeter = require('./greeter');
-console.log(greeter.greet('Jane'));
-```
-
-`entry2.js`
-
-
-```javascript
-module.exports = {
-  entry: {
-    entry1: './entry1',
-    entry2: './entry2'
-  },
-
-  output: {
-    path: 'output',
-    filename: 'bundle-[name].js'
-  }
-};
-```
-
-
-```bash
-$ webpack
-Hash: a4659d84e3692cf36938
-Version: webpack 1.4.15
-Time: 31ms
-           Asset  Size  Chunks             Chunk Names
-bundle-entry2.js  1732       0  [emitted]  entry2
-bundle-entry1.js  1732       1  [emitted]  entry1
-   [0] ./entry1.js 72 {1} [built]
-   [0] ./entry2.js 72 {0} [built]
-   [1] ./greeter.js 81 {0} {1} [built]
-```
-
-Note:
-
-Webpack outputs a `bundle-entry1.js` containing `entry1.js` plus `greeter.js`, and a `bundle-entry2.js` containing `entry2.js` plus `greeter.js`. The number between curly braces (e.g. `{1}`) tells you which chunks contain that module.
-
-This is not a good solution for a web application, as a user will probably hit multiple entry points in a session, and would have to download common dependencies multiple times.
-
-
-```javascript
-module.exports = {
-  entry: {
-    entry1: './entry1',
-    entry2: './entry2'
-  },
-
-  output: {
-    path: 'output',
-    filename: 'bundle-[name].js'
-  },
-
-  plugins: [
-    new CommonsChunkPlugin('common', 'bundle-[name].js')
-  ]
-};
-```
-
-`webpack.config.js`
-
-
-```bash
-$ webpack
-Hash: 75ef3309e9d1f1110c46
-Version: webpack 1.4.15
-Time: 30ms
-           Asset  Size  Chunks             Chunk Names
-bundle-entry2.js   172       0  [emitted]  entry2
-bundle-entry1.js   172       1  [emitted]  entry1
-bundle-common.js  3842       2  [emitted]  common
-   [0] ./entry1.js 72 {1} [built]
-   [0] ./entry2.js 72 {0} [built]
-   [1] ./greeter.js 81 {2} [built]
-```
-
-Note:
-
-The `CommonsChunkPlugin` plugin identifies dependencies that are shared among the entry points, and puts them into their own chunk. You end up with `bundle-entry1.js` containing `entry1.js`, `bundle-entry2.js` containing `entry2.js`, and `bundle-common.js` containing `greeter.js`.
-
-In this simple example it may seem overkill, but when you are depending on huge libraries, like jQuery, Moment or Angular, it is totally worth it.
-
+---
 
 
 ## Module Resolution
-
-Note:
-
-Having to specify paths to dependencies can be a pain, specially when you have to move things around. Webpack allows you to tweak how modules are resolved.
 
 
 ```javascript
 var greeter = require('greeter');
 console.log(greeter.greet('John'));
 ```
-
 `entry.js`
-
 
 ```javascript
 module.exports = {
-  entry: './entry',
-
+entry: './entry',
   output: {
-    path: 'output',
-    filename: 'bundle.js'
-  },
-
+	 path: 'output',
+	 filename: 'bundle.js'
+	},
   resolve: {
-    modulesDirectories: [
-      'utils',
-      'web_modules',
-      'node_modules'
-    ]
+	modulesDirectories: ['utils','web_modules','node_modules']
   }
 };
 ```
 
 `webpack.config.js`
 
-Note:
 
-Webpack will try to find your dependency in those directories.
-
-
-```bash
-$ webpack && node output/bundle.js
-Hash: 23fc5041a118a3dbc1ee
-Version: webpack 1.4.15
-Time: 34ms
-    Asset  Size  Chunks             Chunk Names
-bundle.js  1732       0  [emitted]  main
-   [0] ./entry.js 70 {0} [built]
-   [1] ./utils/greeter.js 81 {0} [built]
-Hello John
-```
-
-
+----
 
 ## Loaders
 
 Note:
 
-It's pretty common to apply transformations to modules. Think CoffeeScript to JavaScript, or Less to CSS. That's the job of loaders.
+It's pretty common to apply transformations to modules. Think TypeScript to JavaScript, or Sass to CSS. That's the job of loaders.
 
 
-```coffeescript
-module.exports =
-  greet: (name) ->
-    return "Hello #{name}"
+```typesciprt
+export function greet(name){ 
+	return `Hello ${name}`;
+}
 ```
 
-`greeter.coffee`
-
+`greeter.ts`
+---
 
 Inlined:
 
 ```javascript
-var greeter = require('coffee!./greeter');
+var greeter = require('ts!./greeter'); // special inline loader syntax
 console.log(greeter.greet('John'));
 ```
 
 `entry.js`
-
 
 ... or via config:
 
@@ -324,27 +242,24 @@ console.log(greeter.greet('John'));
 var greeter = require('./greeter');
 console.log(greeter.greet('John'));
 ```
-
 `entry.js`
 
+--
 
 ```javascript
 module.exports = {
   entry: './entry',
-
   output: {
-    path: 'output',
-    filename: 'bundle.js'
+	path: 'output',
+	filename: 'bundle.js'
   },
-
   module: {
-    loaders: [
-      { test: /\.coffee$/, loader: 'coffee' }
-    ]
+	loaders: [
+	  { test: /\.ts$/, loader: 'ts' }
+	]
   },
-
   resolve: {
-    extensions: ['', '.coffee', '.js']
+	extensions: ['', '.ts', '.js']
   }
 };
 ```
@@ -363,13 +278,13 @@ $ webpack && node output/bundle.js
 Hash: b99cec921bbe2d10542d
 Version: webpack 1.4.15
 Time: 70ms
-    Asset  Size  Chunks             Chunk Names
+	Asset  Size  Chunks             Chunk Names
 bundle.js  1731       0  [emitted]  main
    [0] ./entry.js 72 {0} [built]
-    + 1 hidden modules
+	+ 1 hidden modules
 Hello John
 ```
-
+----
 
 ### HTML, CSS, Assets
 
@@ -390,20 +305,20 @@ body {
 ```javascript
 module.exports = {
   module: {
-    loaders: [
-      {
-        test: /\.(gif|jpe?g|png)$/,
-        loader: 'url?limit=10000'
-      },
-      {
-        test: /\.css$/,
-        loader: 'style!css'
-      },
-      {
-        test: /\.less$/,
-        loader: 'style!css!less?strictMath'
-      }
-    ]
+	loaders: [
+	  {
+		test: /\.(gif|jpe?g|png)$/,
+		loader: 'url?limit=10000'
+	  },
+	  {
+		test: /\.css$/,
+		loader: 'style!css'
+	  },
+	  {
+		test: /\.less$/,
+		loader: 'style!css!less?strictMath'
+	  }
+	]
   }
 };
 ```
@@ -422,16 +337,16 @@ CSS files need to go through yet another loader, `style`, to be injected into th
 ```javascript
 module.exports = {
   module: {
-    loaders: [
-      {
-        test: /\.css$/,
-        loader: ExtractTextPlugin.extract('style', 'css')
-      }
-    ]
+	loaders: [
+	  {
+		test: /\.css$/,
+		loader: ExtractTextPlugin.extract('style', 'css')
+	  }
+	]
   },
 
   plugins: [
-    new ExtractTextPlugin('bundle.css')
+	new ExtractTextPlugin('bundle.css')
   ]
 };
 ```
@@ -448,18 +363,18 @@ $ webpack
 Hash: f379bf0455c6069d7446
 Version: webpack 1.4.15
 Time: 200ms
-    Asset  Size  Chunks             Chunk Names
+	Asset  Size  Chunks             Chunk Names
 bundle.js  2144       0  [emitted]  main
  main.css   512       0  [emitted]  main
    [0] ./entry.js 224 {0} [built]
    [1] ./greeter.js 81 {0} [built]
-    + 7 hidden modules
+	+ 7 hidden modules
 Child extract-text-webpack-plugin:
-        + 3 hidden modules
+		+ 3 hidden modules
 Child extract-text-webpack-plugin:
-        + 2 hidden modules
+		+ 2 hidden modules
 ```
-
+----
 
 ### Busting Caches
 
@@ -469,13 +384,13 @@ module.exports = {
   entry: './entry',
 
   output: {
-    path: 'output',
-    filename: '[name]-[hash].js',
-    chunkFilename: '[name]-[id]-[chunkhash].js'
+	path: 'output',
+	filename: '[name]-[hash].js',
+	chunkFilename: '[name]-[id]-[chunkhash].js'
   },
 
   plugins: [
-    new ExtractTextPlugin('[name]-[contenthash].css')
+	new ExtractTextPlugin('[name]-[contenthash].css')
   ]
 };
 ```
@@ -487,40 +402,40 @@ module.exports = {
 Hash: 79eade7734f974b46524
 Version: webpack 1.4.15
 Time: 192ms
-                                    Asset  Size  Chunks
-             main-79eade7734f974b46524.js  2144       0
+									Asset  Size  Chunks
+			 main-79eade7734f974b46524.js  2144       0
 main-3ddaac796ef046d7c9b226ac20da330b.css   512       0
    [0] ./entry.js 224 {0} [built]
    [1] ./greeter.js 81 {0} [built]
-    + 7 hidden modules
+	+ 7 hidden modules
 Child extract-text-webpack-plugin:
-        + 3 hidden modules
+		+ 3 hidden modules
 Child extract-text-webpack-plugin:
-        + 2 hidden modules
+		+ 2 hidden modules
 ```
 
 Note:
 
 You even have cache-busting hashes built in.
 
-
+----
 ### Pre/Post Loaders
 
 
 ```javascript
 module.exports = {
   module: {
-    preLoaders: [{
-      test:    /\.js$/,
-      exclude: /(node_modules)\//,
-      loader:  'jshint!jscs'
-    }],
+	preLoaders: [{
+	  test:    /\.js$/,
+	  exclude: /(node_modules)\//,
+	  loader:  'jshint!jscs'
+	}],
 
-    postLoaders: [{
-      test:    /\.js$/,
-      exclude: /(test|node_modules)\//,
-      loader:  'istanbul-instrumenter'
-    }]
+	postLoaders: [{
+	  test:    /\.js$/,
+	  exclude: /(test|node_modules)\//,
+	  loader:  'istanbul-instrumenter'
+	}]
   }
 };
 ```
@@ -539,8 +454,100 @@ The order in which loaders are applied is the following:
 - Inlined loaders are applied
 - `module.postLoaders` are applied
 
+----
+
+## Multiple Entries
 
 
+```javascript
+var greeter = require('./greeter');
+console.log(greeter.greet('John'));
+```
+`entry1.js`
+
+
+
+
+
+```javascript
+var greeter = require('./greeter');
+console.log(greeter.greet('Jane'));
+```
+
+`entry2.js`
+
+
+--
+webpack.config.js
+```javascript
+module.exports = {
+  entry: {
+	entry1: './entry1',
+	entry2: './entry2'
+  },
+  output: {
+	path: 'output',
+	filename: 'bundle-[name].js'
+  }
+};
+```
+--
+
+```bash
+$ webpack
+Hash: a4659d84e3692cf36938
+Version: webpack 1.4.15
+Time: 31ms
+		   Asset  Size  Chunks             Chunk Names
+bundle-entry2.js  1732       0  [emitted]  entry2
+bundle-entry1.js  1732       1  [emitted]  entry1
+   [0] ./entry1.js 72 {1} [built]
+   [0] ./entry2.js 72 {0} [built]
+   [1] ./greeter.js 81 {0} {1} [built]
+```
+
+Webpack outputs a `bundle-entry1.js` containing `entry1.js` plus `greeter.js`, and a `bundle-entry2.js` containing `entry2.js` plus `greeter.js`. The number between curly braces (e.g. `{1}`) tells you which chunks contain that module.
+
+This is not a good solution for a web application, as a user will probably hit multiple entry points in a session, and would have to download common dependencies multiple times.
+--
+
+```javascript
+var CommonsChunkPlugin = require("webpack/lib/optimize/CommonsChunkPlugin");
+module.exports = {
+  entry: {
+	entry1: './entry1',
+	entry2: './entry2'
+  },
+
+  output: {
+	path: 'output',
+	filename: 'bundle-[name].js'
+  },
+
+  plugins: [
+	new CommonsChunkPlugin('common', 'bundle-[name].js')
+  ]
+};
+```
+`webpack.config.js`
+
+--
+
+```bash
+$ webpack
+Hash: 75ef3309e9d1f1110c46
+Version: webpack 1.4.15
+Time: 30ms
+		   Asset  Size  Chunks             Chunk Names
+bundle-entry2.js   172       0  [emitted]  entry2
+bundle-entry1.js   172       1  [emitted]  entry1
+bundle-common.js  3842       2  [emitted]  common
+   [0] ./entry1.js 72 {1} [built]
+   [0] ./entry2.js 72 {0} [built]
+   [1] ./greeter.js 81 {2} [built]
+```
+
+----
 ## Plugins
 
 
@@ -549,7 +556,7 @@ var t = require('./translator');
 
 module.exports = {
   greet: function (name) {
-    return t(__('greeting'), {name: name});
+	return t(__('greeting'), {name: name});
   }
 };
 ```
@@ -589,20 +596,20 @@ var langs = {
 ```javascript
 module.exports = Object.keys(langs).map(function (l) {
   return {
-    entry: './entry',
+	entry: './entry',
 
-    output: {
-      path: 'output',
-      filename: 'bundle-' + l + '.js'
-    },
+	output: {
+	  path: 'output',
+	  filename: 'bundle-' + l + '.js'
+	},
 
-    plugins: [
-      new DefinePlugin({
-        DEBUG: !!process.env.DEBUG,
-        LANGUAGE: '"' + l + '"'
-      }),
-      new I18nPlugin(langs[l])
-    ]
+	plugins: [
+	  new DefinePlugin({
+		DEBUG: !!process.env.DEBUG,
+		LANGUAGE: '"' + l + '"'
+	  }),
+	  new I18nPlugin(langs[l])
+	]
   };
 });
 ```
@@ -635,7 +642,7 @@ When we bundle the app with the `DEBUG` environment variable set to `true`, we s
 function(module, exports, __webpack_require__) {
   var greeter = __webpack_require__(1);
   if (true) {
-    console.log('Greeting in "%s"', ("en"));
+	console.log('Greeting in "%s"', ("en"));
   }
   console.log(greeter.greet('John'));
 },
@@ -670,7 +677,7 @@ Note:
 If we don't specify the `DEBUG` environment variable, the condition in the `if` statement is always false. That's why the whole block gets dropped by UglifyJS when we enable optimizations with the `-p` flag, and we don't see the debugging statement in the output.
 
 
-
+----
 ## Contexts
 
 
@@ -704,7 +711,7 @@ $ webpack
 Hash: d0078b76688772738490
 Version: webpack 1.4.15
 Time: 38ms
-    Asset  Size  Chunks             Chunk Names
+	Asset  Size  Chunks             Chunk Names
 bundle.js  2631       0  [emitted]  main
    [0] ./entry.js 167 {0} [built]
    [1] ./lib ^\.\/.*\.js$ 193 {0} [built]
@@ -734,7 +741,7 @@ At runtime it does the right thing.
 
 * Require resource based on locale <!-- .element: class="fragment" -->
 * Require all components to build a gallery <!-- .element: class="fragment" -->
-
+----
 
 ### Context Replacement
 
@@ -756,10 +763,10 @@ $ webpack
 Hash: 3fa34cb738076f531876
 Version: webpack 1.4.15
 Time: 396ms
-    Asset    Size  Chunks             Chunk Names
+	Asset    Size  Chunks             Chunk Names
 bundle.js  393777       0  [emitted]  main
    [0] ./entry.js 70 {0} [built]
-    + 81 hidden modules
+	+ 81 hidden modules
 ```
 
 Note:
@@ -771,11 +778,11 @@ Why is the bundle so big?
 function loadLocale(name) {
   var oldLocale = null;
   if (!locales[name] && hasModule) {
-    try {
-      oldLocale = moment.locale();
-      require('./locale/' + name);
-      moment.locale(oldLocale);
-    } catch (e) { }
+	try {
+	  oldLocale = moment.locale();
+	  require('./locale/' + name);
+	  moment.locale(oldLocale);
+	} catch (e) { }
   }
   return locales[name];
 }
@@ -793,15 +800,15 @@ module.exports = {
   entry: './entry',
 
   output: {
-    path: 'output',
-    filename: 'bundle.js'
+	path: 'output',
+	filename: 'bundle.js'
   },
 
   plugins: [
-    new ContextReplacementPlugin(
-      /moment[\\\/]locale$/,
-      new RegExp('^\\./en$')
-    )
+	new ContextReplacementPlugin(
+	  /moment[\\\/]locale$/,
+	  new RegExp('^\\./en$')
+	)
   ]
 };
 ```
@@ -818,17 +825,17 @@ $ webpack
 Hash: d6a652b194a14ca3d0a6
 Version: webpack 1.4.15
 Time: 141ms
-    Asset    Size  Chunks             Chunk Names
+	Asset    Size  Chunks             Chunk Names
 bundle.js  101653       0  [emitted]  main
    [0] ./entry.js 70 {0} [built]
-    + 3 hidden modules
+	+ 3 hidden modules
 ```
 
 Note:
 
 The resulting bundle is much smaller, because we've left all other locales out.
 
-
+----
 
 ## Load On Demand
 
@@ -855,12 +862,12 @@ a.bar(p);
 ```javascript
 module.exports = {
   foo: function (callback) {
-    callback('foo');
+	callback('foo');
   },
   bar: function (callback) {
-    require.ensure(['./b'], function (require) {
-      require('./b').bar(callback);
-    });
+	require.ensure(['./b'], function (require) {
+	  require('./b').bar(callback);
+	});
   }
 };
 ```
@@ -875,7 +882,7 @@ Calling `require.ensure` here will create a split point that will put `b` into i
 ```javascript
 module.exports = {
   bar: function (callback) {
-    callback('bar');
+	callback('bar');
   }
 };
 ```
@@ -888,7 +895,7 @@ $ webpack
 Hash: 0b184470f56d6ed09471
 Version: webpack 1.4.15
 Time: 31ms
-      Asset  Size  Chunks             Chunk Names
+	  Asset  Size  Chunks             Chunk Names
   bundle.js  4098       0  [emitted]  main
 1.bundle.js   180       1  [emitted]
    [0] ./entry.js 96 {0} [built]
@@ -909,7 +916,7 @@ $ open http://localhost:8080/bundle
 Note:
 
 You can see this in action by launching `webpack-dev-server`.
-
+----
 
 
 ## Dev Server
@@ -929,15 +936,15 @@ Time: 196ms
   Asset   Size  Chunks             Chunk Names
 main.js  11484       0  [emitted]  main
 chunk    {0} main.js (main) 10032 [rendered]
-    [0] ./entry.js 224 {0} [built]
-    [1] ./greeter.js 81 {0} [built]
-    [2] ./foo.css 1287 {0} [built]
-    [3] ./~/css-loader!./foo.css 317 {0} [built]
-    [4] ./bar.less 1638 {0} [built]
-    [5] ./~/css-loader!./~/less-loader?strictMath!./bar.less 267 {0} [built]
-    [6] ./~/style-loader/addStyles.js 5513 {0} [built]
-    [7] ./~/css-loader/cssToString.js 352 {0} [built]
-    [8] ./bg.png 353 {0} [built]
+	[0] ./entry.js 224 {0} [built]
+	[1] ./greeter.js 81 {0} [built]
+	[2] ./foo.css 1287 {0} [built]
+	[3] ./~/css-loader!./foo.css 317 {0} [built]
+	[4] ./bar.less 1638 {0} [built]
+	[5] ./~/css-loader!./~/less-loader?strictMath!./bar.less 267 {0} [built]
+	[6] ./~/style-loader/addStyles.js 5513 {0} [built]
+	[7] ./~/css-loader/cssToString.js 352 {0} [built]
+	[8] ./bg.png 353 {0} [built]
 webpack: bundle is now VALID.
 ```
 
@@ -950,9 +957,9 @@ Time: 12ms
   Asset   Size  Chunks             Chunk Names
 main.js  11483       0  [emitted]  main
 chunk    {0} main.js (main) 10031 [rendered]
-    [4] ./bar.less 1638 {0} [built]
-    [5] ./~/css-loader!./~/less-loader?strictMath!./bar.less 266 {0} [built]
-     + 7 hidden modules
+	[4] ./bar.less 1638 {0} [built]
+	[5] ./~/css-loader!./~/less-loader?strictMath!./bar.less 266 {0} [built]
+	 + 7 hidden modules
 webpack: bundle is now VALID.
 ```
 
@@ -975,17 +982,17 @@ webpack: bundle is now INVALID.
 Hash: 3fec1bd53dcd5db963b5
 Version: webpack 1.4.15
 Time: 21ms
-                               Asset    Size  Chunks
-                             main.js  141697       0
+							   Asset    Size  Chunks
+							 main.js  141697       0
 0.67e20f0d56fd82d86a5d.hot-update.js     271       0
 67e20f0d56fd82d86a5d.hot-update.json      36
 chunk    {0} main.js, 0.67e20f0d56fd82d8.hot-update.js
-    [8] ./bar.less 1638 {0} [built]
-    [9] ./~/css-loader!./~/less-loader!./bar.less
-     + 13 hidden modules
+	[8] ./bar.less 1638 {0} [built]
+	[9] ./~/css-loader!./~/less-loader!./bar.less
+	 + 13 hidden modules
 webpack: bundle is now VALID.
 ```
-
+----
 ## Dependency Visualization
 
 <http://webpack.github.io/analyse/> <!-- .element: class="fragment" -->
@@ -999,8 +1006,15 @@ The *analyse* tool draws a pretty graph of all the modules, and gives us all sor
 
 ![Dependency graph](assets/graph.png)
 
-
+----
 
 ## Links and thanks
 
-- original presentation by Daniel Perez Alvarez <https://unindented.github.io/webpack-presentation/> 
+- original presentation by Daniel Perez Alvarez <https://unindented.github.io/webpack-presentation/>
+- The ultimate webpack setup <http://www.christianalfoni.com/articles/2015_04_19_The-ultimate-webpack-setup/>
+- Webpack 101 <http://code.hootsuite.com/webpack-101/>
+- Docs: [webpack.github.io/docs/](http://webpack.github.io/docs/)
+- Examples: [github.com/.../examples](https://github.com/webpack/webpack/tree/master/examples)
+- Angular 2 webpack starter <https://github.com/AngularClass/angular2-webpack-starter>
+- Another great starter <https://github.com/alexpods/angular2-universal-starter>
+

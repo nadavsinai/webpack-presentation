@@ -8,11 +8,11 @@ module.exports = {
 
   module: {
     loaders: [
-      { test: /\.coffee$/, loader: 'coffee' }
+      { test: /\.ts/, loader: 'ts' }
     ]
   },
 
   resolve: {
-    extensions: ['', '.web.coffee', '.web.js', '.coffee', '.js']
+    extensions: ['', '.ts', '.js']
   }
 };
